@@ -5,55 +5,17 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { colors } from '../theme';
 
+// Import centralized data
+import { NODES, EDGES } from '../data';
+
 export default function RouteOptimizationScreen() {
   const route = useRoute();
   const navigation = useNavigation();
   const { destination } = route.params;
 
   const graphData = useMemo(() => {
-    const nodes = [
-      { id: "N1", name: "Sylhet City Hub", type: "central_command", lat: 24.8949, lng: 91.8687 },
-      { id: "N2", name: "Osmani Airport Node", type: "supply_drop", lat: 24.9632, lng: 91.8668 },
-      { id: "N3", name: "Sunamganj Sadar Camp", type: "relief_camp", lat: 25.0658, lng: 91.4073 },
-      { id: "N4", name: "Companyganj Outpost", type: "relief_camp", lat: 25.0715, lng: 91.7554 },
-      { id: "N5", name: "Kanaighat Point", type: "waypoint", lat: 24.9945, lng: 92.2611 },
-      { id: "N6", name: "Habiganj Medical", type: "hospital", lat: 24.3840, lng: 91.4169 },
-      { id: "N7", name: "Gowainghat Camp", type: "relief_camp", lat: 25.1050, lng: 91.9950 },
-      { id: "N8", name: "Jaintiapur Camp", type: "relief_camp", lat: 25.1333, lng: 92.1167 },
-      { id: "N9", name: "Bishwanath Camp", type: "relief_camp", lat: 24.8750, lng: 91.7250 },
-      { id: "N10", name: "Golapganj Camp", type: "relief_camp", lat: 24.8483, lng: 92.0183 },
-      { id: "N11", name: "Derai Camp", type: "relief_camp", lat: 24.7833, lng: 91.3500 },
-      { id: "N12", name: "Chhatak Camp", type: "relief_camp", lat: 25.0333, lng: 91.6667 },
-      { id: "N13", name: "Zakiganj Camp", type: "relief_camp", lat: 24.8750, lng: 92.3700 }
-    ];
-
-    // Assigning random weights between 15 and 90 minutes
-    const edges = [
-      { id: "E1", source: "N1", target: "N2", type: "road", is_flooded: false },
-      { id: "E2", source: "N1", target: "N3", type: "road", is_flooded: false },
-      { id: "E3", source: "N2", target: "N4", type: "road", is_flooded: false },
-      { id: "E4", source: "N1", target: "N5", type: "road", is_flooded: false },
-      { id: "E5", source: "N1", target: "N6", type: "road", is_flooded: false },
-      { id: "E6", source: "N1", target: "N3", type: "waterway", is_flooded: false },
-      { id: "E7", source: "N3", target: "N4", type: "waterway", is_flooded: false },
-      { id: "E8", source: "N1", target: "N9", type: "road", is_flooded: false },
-      { id: "E9", source: "N1", target: "N10", type: "road", is_flooded: false },
-      { id: "E10", source: "N10", target: "N13", type: "road", is_flooded: false },
-      { id: "E11", source: "N2", target: "N7", type: "road", is_flooded: true },
-      { id: "E12", source: "N7", target: "N8", type: "road", is_flooded: false },
-      { id: "E13", source: "N9", target: "N12", type: "road", is_flooded: false },
-      { id: "E14", source: "N12", target: "N3", type: "road", is_flooded: false },
-      { id: "E15", source: "N3", target: "N11", type: "waterway", is_flooded: false },
-      { id: "E16", source: "N11", target: "N6", type: "road", is_flooded: false },
-      { id: "E17", source: "N5", target: "N8", type: "waterway", is_flooded: false },
-      { id: "E18", source: "N4", target: "N7", type: "waterway", is_flooded: false },
-      { id: "E19", source: "N10", target: "N5", type: "road", is_flooded: false },
-      { id: "E20", source: "N12", target: "N4", type: "road", is_flooded: false },
-      { id: "E21", source: "N6", target: "N9", type: "road", is_flooded: false },
-      { id: "E22", source: "N1", target: "N12", type: "waterway", is_flooded: false }
-    ].map(e => ({ ...e, base_weight_mins: Math.floor(Math.random() * 75) + 15 }));
-
-    return { nodes, edges };
+    // Pulling directly from data.js, which already has the base_weight_mins hardcoded
+    return { nodes: NODES, edges: EDGES };
   }, []);
 
   const mapHtml = `

@@ -4,18 +4,8 @@ import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { colors } from '../theme';
 
-const NODES = [
-  { id: "N2", name: "Osmani Airport Node", type: "supply_drop" },
-  { id: "N3", name: "Sunamganj Sadar Camp", type: "relief_camp" },
-  { id: "N4", name: "Companyganj Outpost", type: "relief_camp" },
-  { id: "N7", name: "Gowainghat Camp", type: "relief_camp" },
-  { id: "N8", name: "Jaintiapur Camp", type: "relief_camp" },
-  { id: "N9", name: "Bishwanath Camp", type: "relief_camp" },
-  { id: "N10", name: "Golapganj Camp", type: "relief_camp" },
-  { id: "N11", name: "Derai Camp", type: "relief_camp" },
-  { id: "N12", name: "Chhatak Camp", type: "relief_camp" },
-  { id: "N13", name: "Zakiganj Camp", type: "relief_camp" }
-];
+// 1. Import centralized nodes from the data folder
+import { NODES } from '../data';
 
 export default function QRScanScreen() {
   const navigation = useNavigation();
@@ -27,6 +17,11 @@ export default function QRScanScreen() {
       navigation.navigate('RouteOptimization', { destination: selectedNode });
     }
   };
+
+  // 2. Filter the nodes to only include relief camps and supply drops
+  const filteredNodes = NODES.filter(
+    node => node.type === 'relief_camp' || node.type === 'supply_drop'
+  );
 
   return (
     <View style={styles.root}>
@@ -55,7 +50,8 @@ export default function QRScanScreen() {
         {dropdownOpen && (
           <View style={styles.listContainer}>
             <ScrollView nestedScrollEnabled>
-              {NODES.map(node => (
+              {/* 3. Map over the filtered nodes instead of the hardcoded list */}
+              {filteredNodes.map(node => (
                 <Pressable 
                   key={node.id} 
                   style={styles.listItem}
