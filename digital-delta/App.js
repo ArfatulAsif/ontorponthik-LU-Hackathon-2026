@@ -7,6 +7,7 @@ import LoginScreen from "./screens/LoginScreen";
 import HomeScreen from "./screens/HomeScreen";
 import QRScanScreen from "./screens/QRScanScreen";
 import RouteOptimizationScreen from "./screens/RouteOptimizationScreen";
+import InventoryScreen from "./screens/InventoryScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -29,6 +30,7 @@ export default function App() {
             name="RouteOptimization"
             component={RouteOptimizationScreen}
           />
+          <Stack.Screen name="Inventory" component={InventoryScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </DataProvider>
