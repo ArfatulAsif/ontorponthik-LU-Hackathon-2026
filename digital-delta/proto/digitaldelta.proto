@@ -1,0 +1,127 @@
+syntax = "proto3";
+
+package digitaldelta;
+
+option go_package = "./pb";
+
+// --- ENUMS ---
+
+enum Role {
+  ROLE_UNSPECIFIED = 0;
+  FIELD_VOLUNTEER = 1;   
+  SUPPLY_MANAGER = 2;    
+  DRONE_OPERATOR = 3;    
+  CAMP_COMMANDER = 4;    
+  SYNC_ADMIN = 5;        
+}
+
+enum ItemCategory {
+  CAT_UNSPECIFIED = 0;
+  MEDICINE = 1;
+  FOODS = 2;
+  CLOTHS = 3;
+  WATER = 4;
+}
+
+enum Priority {
+  P3_LOW = 0;      
+  P2_STANDARD = 1; 
+  P1_HIGH = 2;     
+  P0_CRITICAL = 3; 
+}
+
+enum TaskStatus {
+  PENDING = 0;
+  ASSIGNED = 1;
+  IN_TRANSIT = 2;
+  HANDOFF_IN_PROGRESS = 3; // For Volunteer -> Volunteer or Drone
+  DELIVERED = 4;
+}
+
+// --- CORE COMPONENTS ---
+
+message VectorClock {
+  map<string, int32> counters = 1;
+}
+
+message MeshMetadata {
+  string creator_node_id = 1; 
+  bytes signature = 2;        
+  VectorClock clock = 3;      
+  int64 timestamp = 4;        
+}
+
+// --- LOGISTICS DATA ---
+
+message TriageRequest {
+  string request_id = 1;
+  string camp_node_id = 2;
+  ItemCategory category = 3;
+  Priority priority = 4;
+  int32 quantity_needed = 5;
+  MeshMetadata meta = 6;
+}
+
+message InventoryStock {
+  string hub_id = 1;
+  ItemCategory category = 2;
+  int32 current_quantity = 3; 
+  MeshMetadata meta = 4;
+}
+
+message RoadStatus {
+  string edge_id = 1;
+  bool is_flooded = 2;
+  float flood_probability = 3; 
+  int32 weight_penalty = 4;     
+  MeshMetadata meta = 5;
+}
+
+// --- MESSAGING (New) ---
+
+message ChatMessage {
+  string message_id = 1;
+  string recipient_node_id = 2; // Can be "BROADCAST" or specific ID
+  string content = 3;
+  MeshMetadata meta = 4;
+}
+
+// --- PROOF OF DELIVERY (Refined) ---
+
+message DeliveryTask {
+  string task_id = 1;
+  string current_holder_id = 2; // Updates as QR is scanned by new volunteer
+  TriageRequest original_request = 3;
+  TaskStatus status = 4;
+  
+  // Chain of custody signatures
+  bytes manager_signature = 5;     // Signed by Supplier at Hub
+  bytes camp_commander_sig = 6;    // Final receipt signature
+  bytes drone_operator_sig = 7;    // If handled by drone (M8)
+  
+  MeshMetadata meta = 8;
+}
+
+// --- THE SYNC ENVELOPE ---
+
+message SyncEnvelope {
+  string sender_node_id = 1;
+  bytes sender_public_key = 2; 
+  
+  oneof payload {
+    TriageRequest triage_update = 3;
+    InventoryStock inventory_update = 4;
+    RoadStatus road_update = 5;
+    DeliveryTask task_update = 6;
+    UserIdentity registration = 7;
+    ChatMessage chat_update = 8; // Node-to-node messaging
+  }
+}
+
+message UserIdentity {
+  string node_id = 1;
+  Role role = 2;
+  string display_name = 3;
+  bytes public_key = 4;
+  MeshMetadata meta = 5;
+}

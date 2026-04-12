@@ -4,17 +4,23 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import BootLogPanel from "../src/components/BootLogPanel";
 import { colors } from "../theme";
 
-export default function LoginScreen({ onLogin }) {
+/**
+ * @param {{ onLogin: () => void, engineDebug?: { bootLogs?: string[], nodeId?: string, publicKeyBase64?: string, storageBackend?: string } }} props
+ */
+export default function LoginScreen({ onLogin, engineDebug }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showEngineLog, setShowEngineLog] = useState(true);
 
   return (
     <KeyboardAvoidingView
@@ -23,6 +29,11 @@ export default function LoginScreen({ onLogin }) {
     >
       <StatusBar style="light" />
       <View style={styles.decorStripe} />
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
       <View style={styles.inner}>
         <View style={styles.logoWrap}>
           <Image source={require("../assets/icon.png")} style={styles.logo} />
@@ -62,15 +73,71 @@ export default function LoginScreen({ onLogin }) {
             <Text style={styles.buttonText}>Log in</Text>
           </Pressable>
         </View>
+
+        {engineDebug ? (
+          <View style={styles.engineSection}>
+            <Pressable
+              onPress={() => setShowEngineLog((s) => !s)}
+              style={styles.engineToggle}
+            >
+              <Text style={styles.engineToggleText}>
+                {showEngineLog ? "▼ Hide engine log" : "▶ Show offline engine log"}
+              </Text>
+            </Pressable>
+            {engineDebug.storageBackend ? (
+              <Text style={styles.engineMeta}>
+                Storage: {engineDebug.storageBackend}
+                {"\n"}
+                node_id: {engineDebug.nodeId ?? "—"}
+                {"\n"}
+                Public key (Base64): {engineDebug.publicKeyBase64 ?? "—"}
+              </Text>
+            ) : null}
+            {showEngineLog ? (
+              <BootLogPanel
+                lines={engineDebug.bootLogs ?? []}
+                title="Boot log (keys / storage)"
+              />
+            ) : null}
+          </View>
+        ) : null}
       </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
   root: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  engineSection: {
+    marginTop: 24,
+    paddingHorizontal: 8,
+    paddingBottom: 32,
+  },
+  engineToggle: {
+    paddingVertical: 8,
+  },
+  engineToggleText: {
+    color: colors.textMuted,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  engineMeta: {
+    marginTop: 4,
+    marginBottom: 8,
+    fontFamily: Platform.select({ ios: "Menlo", android: "monospace", default: "monospace" }),
+    fontSize: 10,
+    lineHeight: 15,
+    color: "rgba(255,255,255,0.55)",
   },
   decorStripe: {
     position: "absolute",
