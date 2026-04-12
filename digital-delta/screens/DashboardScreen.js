@@ -202,7 +202,7 @@ export default function MapScreen() {
                bgColor = '#0284c7';
             } else {
                svgPath = svgs.car;
-               bgColor = '#ea580c';
+               bgColor = '#f71206';
             }
           }
 
