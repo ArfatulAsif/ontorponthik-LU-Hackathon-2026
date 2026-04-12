@@ -3,7 +3,15 @@
  * Proto `SyncEnvelope` carries one `registration` at a time; multiple identities use length-prefixed frames.
  */
 
-import { BleManager } from "react-native-ble-plx";
+import { NativeModules } from "react-native";
+import { decodeBase64, encodeBase64 } from "tweetnacl-util";
+
+import {
+  DD_MESH_GOSSIP_CHAR_UUID,
+  DD_MESH_SERVICE_UUID,
+  uuidMatches,
+} from "../mesh/meshConstants";
+import { getBleManager } from "./bleReadiness";
 
 function loadProtoRoot() {
   return require("../proto/bundle.js");
@@ -175,11 +183,18 @@ export class SyncEngine {
  */
 export class BleMeshService {
   /**
-   * @param {{ syncEngine: SyncEngine, bleManager?: BleManager }} opts
+   * @param {{ syncEngine: SyncEngine, bleManager?: import('react-native-ble-plx').BleManager | null }} opts
    */
   constructor({ syncEngine, bleManager }) {
     this.syncEngine = syncEngine;
-    this.bleManager = bleManager ?? new BleManager();
+    if (bleManager) {
+      this.bleManager = bleManager;
+    } else if (NativeModules.BlePlx) {
+      const { BleManager } = require("react-native-ble-plx");
+      this.bleManager = new BleManager();
+    } else {
+      this.bleManager = null;
+    }
   }
 
   getManager() {
@@ -188,10 +203,75 @@ export class BleMeshService {
 
   /**
    * @param {import('react-native-ble-plx').Device} device
+   * @returns {Promise<import('react-native-ble-plx').Characteristic | null>}
+   */
+  async findGossipCharacteristic(device) {
+    await device.discoverAllServicesAndCharacteristics();
+    let chars;
+    try {
+      chars = await device.characteristicsForService(DD_MESH_SERVICE_UUID);
+    } catch {
+      return null;
+    }
+    if (!chars?.length) return null;
+    for (const c of chars) {
+      if (uuidMatches(c.uuid, DD_MESH_GOSSIP_CHAR_UUID)) return c;
+    }
+    return null;
+  }
+
+  /**
+   * Read peer framed batch, merge into ledger, then write our framed batch.
+   * Peer must run a GATT server exposing {@link DD_MESH_SERVICE_UUID} / {@link DD_MESH_GOSSIP_CHAR_UUID}.
+   *
+   * @param {import('react-native-ble-plx').Device} device
+   * @returns {Promise<{ ok: boolean, reason?: string, incomingResults: { nodeId: string, written: boolean }[] }>}
+   */
+  async exchangeGossipOnDevice(device) {
+    /** @type {{ nodeId: string, written: boolean }[]} */
+    let incomingResults = [];
+    if (!device) {
+      return { ok: false, reason: "NO_DEVICE", incomingResults };
+    }
+    const char = await this.findGossipCharacteristic(device);
+    if (!char) {
+      return { ok: false, reason: "NO_GOSSIP_CHARACTERISTIC", incomingResults };
+    }
+    if (char.isReadable) {
+      const read = await char.read();
+      if (read?.value) {
+        try {
+          const bytes = new Uint8Array(decodeBase64(read.value));
+          if (bytes.length) {
+            incomingResults = await this.syncEngine.handleIncomingSync(bytes);
+          }
+        } catch {
+          incomingResults = [];
+        }
+      }
+    }
+    let framed;
+    try {
+      framed = await this.syncEngine.buildFramedGossipBatch();
+    } catch {
+      return { ok: false, reason: "LOCAL_IDENTITY_MISSING", incomingResults };
+    }
+    const b64 = encodeBase64(framed);
+    if (char.isWritableWithResponse) {
+      await char.writeWithResponse(b64);
+    } else if (char.isWritableWithoutResponse) {
+      await char.writeWithoutResponse(b64);
+    } else {
+      return { ok: false, reason: "CHAR_NOT_WRITABLE", incomingResults };
+    }
+    return { ok: true, incomingResults };
+  }
+
+  /**
+   * @param {import('react-native-ble-plx').Device} device
    */
   async onPeerConnected(device) {
-    await device.discoverAllServicesAndCharacteristics();
-    return this.syncEngine.sync(device);
+    return this.exchangeGossipOnDevice(device);
   }
 }
 
@@ -200,6 +280,9 @@ export class BleMeshService {
  */
 export function createBleMeshService(deps) {
   const syncEngine = new SyncEngine(deps);
-  const bleMesh = new BleMeshService({ syncEngine });
+  const bleMesh = new BleMeshService({
+    syncEngine,
+    bleManager: getBleManager(),
+  });
   return { syncEngine, bleMesh };
 }
