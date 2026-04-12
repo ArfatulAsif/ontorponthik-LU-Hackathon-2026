@@ -155,6 +155,14 @@ export default function HomeScreen() {
 
               <View style={styles.navSection}>
                 <SidebarItem
+                  label="Inventory Management"
+                  icon="package-variant-closed"
+                  onPress={() => {
+                    toggleSidebar(false);
+                    navigation.navigate("Inventory");
+                  }}
+                />
+                <SidebarItem
                   label="Duty Management"
                   icon="clipboard-text-outline"
                 />
@@ -162,7 +170,6 @@ export default function HomeScreen() {
                   label="Network Mesh"
                   icon="transit-connection-variant"
                 />
-                <SidebarItem label="Inventory" icon="package-variant-closed" />
                 <SidebarItem label="System Settings" icon="cog-outline" />
               </View>
 
@@ -178,8 +185,9 @@ export default function HomeScreen() {
   );
 }
 
-const SidebarItem = ({ label, icon }) => (
+const SidebarItem = ({ label, icon, onPress }) => (
   <Pressable
+    onPress={onPress}
     style={({ pressed }) => [
       styles.sidebarItem,
       pressed && styles.sidebarItemPressed,

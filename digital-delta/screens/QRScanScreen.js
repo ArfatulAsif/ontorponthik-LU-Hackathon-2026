@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   StyleSheet,
   View,
@@ -14,6 +14,7 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useData } from "../context/DataContext";
 
 const theme = {
   primary: "#F04E36",
@@ -26,23 +27,31 @@ const theme = {
   inputBg: "#F1F5F9",
 };
 
-const NODES = [
-  { id: "N2", name: "Osmani Airport Node", type: "supply_drop" },
-  { id: "N3", name: "Sunamganj Sadar Camp", type: "relief_camp" },
-  { id: "N4", name: "Companyganj Outpost", type: "relief_camp" },
-  { id: "N7", name: "Gowainghat Camp", type: "relief_camp" },
-  { id: "N8", name: "Jaintiapur Camp", type: "relief_camp" },
-  { id: "N9", name: "Bishwanath Camp", type: "relief_camp" },
-  { id: "N10", name: "Golapganj Camp", type: "relief_camp" },
-  { id: "N11", name: "Derai Camp", type: "relief_camp" },
-  { id: "N12", name: "Chhatak Camp", type: "relief_camp" },
-  { id: "N13", name: "Zakiganj Camp", type: "relief_camp" },
-];
+// const NODES = [
+//   { id: "N2", name: "Osmani Airport Node", type: "supply_drop" },
+//   { id: "N3", name: "Sunamganj Sadar Camp", type: "relief_camp" },
+//   { id: "N4", name: "Companyganj Outpost", type: "relief_camp" },
+//   { id: "N7", name: "Gowainghat Camp", type: "relief_camp" },
+//   { id: "N8", name: "Jaintiapur Camp", type: "relief_camp" },
+//   { id: "N9", name: "Bishwanath Camp", type: "relief_camp" },
+//   { id: "N10", name: "Golapganj Camp", type: "relief_camp" },
+//   { id: "N11", name: "Derai Camp", type: "relief_camp" },
+//   { id: "N12", name: "Chhatak Camp", type: "relief_camp" },
+//   { id: "N13", name: "Zakiganj Camp", type: "relief_camp" },
+// ];
 
 export default function QRScanScreen() {
+  const { nodes } = useData();
+  const [selectedNode, setSelectedNode] = useState(null);
+
+  const filteredNodes = useMemo(
+    () =>
+      nodes.filter((n) => n.type === "relief_camp" || n.type === "supply_drop"),
+    [nodes],
+  );
+
   const navigation = useNavigation();
   const [permission, requestPermission] = useCameraPermissions();
-  const [selectedNode, setSelectedNode] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const scanLineAnim = useRef(new Animated.Value(0)).current;
@@ -166,7 +175,7 @@ export default function QRScanScreen() {
               nestedScrollEnabled
               showsVerticalScrollIndicator={false}
             >
-              {NODES.map((node) => (
+              {filteredNodes.map((node) => (
                 <Pressable
                   key={node.id}
                   style={styles.listItem}
