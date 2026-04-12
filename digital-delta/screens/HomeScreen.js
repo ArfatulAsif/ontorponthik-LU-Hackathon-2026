@@ -25,7 +25,8 @@ const theme = {
   background: "#F9FAFB",
   white: "#FFFFFF",
   gray: "#94A3B8",
-  glass: "rgba(8, 31, 46, 0.96)",
+  // Updated to light glass effect
+  glass: "rgba(255, 255, 255, 0.92)",
 };
 
 export default function HomeScreen() {
@@ -91,7 +92,7 @@ export default function HomeScreen() {
         </Pressable>
       </View>
 
-      {/* Aesthetic Scan FAB */}
+      {/* Scan FAB */}
       <View style={styles.fabContainer}>
         <Pressable
           style={({ pressed }) => [
@@ -134,7 +135,7 @@ export default function HomeScreen() {
               <MaterialCommunityIcons
                 name="close"
                 size={24}
-                color={theme.white}
+                color={theme.secondary}
               />
             </Pressable>
 
@@ -185,7 +186,7 @@ const SidebarItem = ({ label, icon }) => (
     ]}
   >
     <View style={styles.itemIconContainer}>
-      <MaterialCommunityIcons name={icon} size={22} color={theme.white} />
+      <MaterialCommunityIcons name={icon} size={22} color={theme.secondary} />
     </View>
     <Text style={styles.sidebarItemText}>{label}</Text>
   </Pressable>
@@ -220,7 +221,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
 
-  // FAB Styling
   fabContainer: {
     position: "absolute",
     bottom: 40,
@@ -254,7 +254,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.12)",
   },
 
-  // Sidebar Styling
   overlayContainer: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 100,
@@ -278,18 +277,18 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "rgba(255,255,255,0.1)",
+    backgroundColor: "rgba(8, 31, 46, 0.05)",
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
+    borderColor: "rgba(8, 31, 46, 0.1)",
   },
   sidebarContent: { flex: 1 },
   sidebarHeader: { marginBottom: 40, marginTop: 20 },
   miniLogo: {
     width: 50,
     height: 50,
-    backgroundColor: theme.primary,
+    backgroundColor: theme.secondary,
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
@@ -297,7 +296,7 @@ const styles = StyleSheet.create({
   },
   deltaChar: { color: theme.white, fontSize: 24, fontWeight: "300" },
   sidebarTitle: {
-    color: theme.white,
+    color: theme.secondary,
     fontSize: 32,
     fontWeight: "900",
     letterSpacing: -1,
@@ -323,19 +322,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 18,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.05)",
+    borderBottomColor: "rgba(8, 31, 46, 0.05)",
   },
-  sidebarItemPressed: { backgroundColor: "rgba(255,255,255,0.05)" },
+  sidebarItemPressed: { backgroundColor: "rgba(8, 31, 46, 0.03)" },
   itemIconContainer: {
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "rgba(8, 31, 46, 0.05)",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 16,
   },
-  sidebarItemText: { color: theme.white, fontSize: 16, fontWeight: "500" },
+  sidebarItemText: { color: theme.secondary, fontSize: 16, fontWeight: "600" },
 
   sidebarFooter: { marginBottom: 40 },
   versionText: {
