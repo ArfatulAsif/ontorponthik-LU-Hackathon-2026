@@ -1,25 +1,47 @@
-import React, { useMemo } from 'react';
-import { StyleSheet, View, Text, Pressable, Platform } from 'react-native';
-import { WebView } from 'react-native-webview';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import { StatusBar } from 'expo-status-bar';
-import { colors } from '../theme';
+import React, { useMemo, useEffect } from "react";
+import { StyleSheet, View, Text, Pressable, Platform } from "react-native";
+import { WebView } from "react-native-webview";
+import { useRoute, useNavigation } from "@react-navigation/native";
+import { StatusBar } from "expo-status-bar";
+import { colors } from "../theme";
 
 // Import centralized data
-import { NODES, EDGES } from '../data';
+// import { NODES, EDGES } from "../data";
+import { useData } from "../context/DataContext";
 
 export default function RouteOptimizationScreen() {
   const route = useRoute();
   const navigation = useNavigation();
   const { destination } = route.params;
+  const { nodes, edges, updateEdgeStatus } = useData();
+
+  // const graphData = useMemo(() => {
+  //   return {
+  //     nodes: NODES,
+  //     edges: JSON.parse(JSON.stringify(EDGES)),
+  //   };
+  // }, []);
 
   const graphData = useMemo(() => {
-    // We deep clone the edges so toggling floods doesn't permanently break the source data
-    return { 
-      nodes: NODES, 
-      edges: JSON.parse(JSON.stringify(EDGES)) 
+    return {
+      nodes: nodes,
+      edges: JSON.parse(JSON.stringify(edges)),
     };
-  }, []);
+  }, [nodes, edges]);
+
+  // Listener to receive flood toggles from the WebView
+  const handleMessage = (event) => {
+    try {
+      const dataString = event.nativeEvent?.data || event.data;
+      const { edgeId, isFlooded } = JSON.parse(dataString);
+
+      if (edgeId) {
+        updateEdgeStatus(edgeId, isFlooded);
+      }
+    } catch (err) {
+      console.warn("Error parsing WebView message", err);
+    }
+  };
 
   const mapHtml = `
     <!DOCTYPE html>
@@ -92,9 +114,15 @@ export default function RouteOptimizationScreen() {
 
         function confirmFlood() {
           if (pendingEdge) {
-            pendingEdge.is_flooded = !pendingEdge.is_flooded; 
+            pendingEdge.is_flooded = !pendingEdge.is_flooded;
+    
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+              edgeId: pendingEdge.id,
+              isFlooded: pendingEdge.is_flooded
+            }));
+
             renderNetwork(); 
-          }
+            }
           closeModal();
         }
 
@@ -259,17 +287,33 @@ export default function RouteOptimizationScreen() {
         <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Text style={styles.backText}>← Abort</Text>
         </Pressable>
-        <Text style={styles.headerTitle}>Delivering to: {destination.name}</Text>
+        <Text style={styles.headerTitle}>
+          Delivering to: {destination.name}
+        </Text>
       </View>
-      <WebView originWhitelist={['*']} source={{ html: mapHtml }} style={{ flex: 1 }} scrollEnabled={false} />
+      <WebView
+        key={JSON.stringify(edges)}
+        originWhitelist={["*"]}
+        source={{ html: mapHtml }}
+        style={{ flex: 1 }}
+        scrollEnabled={false}
+        onMessage={handleMessage}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
-  header: { paddingTop: Platform.OS === 'ios' ? 60 : 40, paddingHorizontal: 20, paddingBottom: 20, backgroundColor: colors.surface, flexDirection: 'row', alignItems: 'center' },
+  header: {
+    paddingTop: Platform.OS === "ios" ? 60 : 40,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    backgroundColor: colors.surface,
+    flexDirection: "row",
+    alignItems: "center",
+  },
   backBtn: { marginRight: 15 },
-  backText: { color: colors.primary, fontWeight: 'bold' },
-  headerTitle: { color: colors.text, fontSize: 16, fontWeight: 'bold' }
+  backText: { color: colors.primary, fontWeight: "bold" },
+  headerTitle: { color: colors.text, fontSize: 16, fontWeight: "bold" },
 });
