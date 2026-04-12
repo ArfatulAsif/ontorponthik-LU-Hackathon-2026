@@ -1,6 +1,5 @@
-import { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
-  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -8,60 +7,217 @@ import {
   Text,
   TextInput,
   View,
+  Animated,
+  Dimensions,
+  Easing,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { colors } from "../theme";
+
+const { width } = Dimensions.get("window");
+
+const theme = {
+  primary: "#F04E36",
+  secondary: "#081F2E",
+  accent: "#EAB308",
+  success: "#2FC94E",
+  background: "#F9FAFB",
+  white: "#FFFFFF",
+  gray: "#94A3B8",
+};
 
 export default function LoginScreen({ onLogin }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  // Entry Animation Refs
+  const logoPop = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+  const buttonScale = useRef(new Animated.Value(1)).current;
+
+  // Continuous Animation Refs
+  const radarScale = useRef(new Animated.Value(1)).current;
+  const radarOpacity = useRef(new Animated.Value(0.1)).current;
+  const logoFloat = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // 1. Entry Animations
+    Animated.stagger(150, [
+      Animated.spring(logoPop, {
+        toValue: 1,
+        friction: 4,
+        useNativeDriver: true,
+      }),
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+
+    // 2. Continuous Radar Pulse Loop
+    Animated.loop(
+      Animated.parallel([
+        Animated.timing(radarScale, {
+          toValue: 1.5,
+          duration: 2500,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.sequence([
+          Animated.timing(radarOpacity, {
+            toValue: 0.4,
+            duration: 1200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(radarOpacity, {
+            toValue: 0,
+            duration: 1300,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]),
+    ).start();
+
+    // 3. Continuous Logo Float Loop
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(logoFloat, {
+          toValue: -6,
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(logoFloat, {
+          toValue: 0,
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
+  }, []);
+
+  const handlePressIn = () => {
+    Animated.spring(buttonScale, {
+      toValue: 0.95,
+      useNativeDriver: true,
+    }).start();
+  };
+  const handlePressOut = () => {
+    Animated.spring(buttonScale, { toValue: 1, useNativeDriver: true }).start();
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.root}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <StatusBar style="light" />
-      <View style={styles.decorStripe} />
+      <StatusBar style="dark" />
+
+      <View style={styles.gridOverlay} />
+
       <View style={styles.inner}>
-        <View style={styles.logoWrap}>
-          <Image source={require("../assets/icon.png")} style={styles.logo} />
-          <Text style={styles.brand}>Digital Delta</Text>
-          <Text style={styles.tagline}>Sign in to continue</Text>
+        <View style={styles.header}>
+          {/* Tactical Logo Icon with Continuous Floating & Pulse */}
+          <View style={styles.logoWrapper}>
+            <Animated.View
+              style={[
+                styles.logoContainer,
+                {
+                  transform: [{ scale: logoPop }, { translateY: logoFloat }],
+                },
+              ]}
+            >
+              <View style={styles.logoInner}>
+                <Text style={styles.deltaChar}>Δ</Text>
+              </View>
+            </Animated.View>
+
+            {/* Animated Radar Ring */}
+            <Animated.View
+              style={[
+                styles.radarRing,
+                {
+                  opacity: radarOpacity,
+                  transform: [{ scale: radarScale }],
+                },
+              ]}
+            />
+          </View>
+
+          <Animated.Text style={[styles.brand, { opacity: fadeAnim }]}>
+            Digital <Text style={{ color: theme.primary }}>Delta</Text>
+          </Animated.Text>
+
+          <Animated.View
+            style={[
+              styles.mottoContainer,
+              { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+            ]}
+          >
+            <View style={styles.mottoDecor} />
+            <Text style={styles.tagline}>
+              Resilient Logistics & Mesh Triage{"\n"}
+              <Text style={styles.taglineBold}>
+                Engine for Disaster Response
+              </Text>
+            </Text>
+            <View style={[styles.mottoDecor, { alignSelf: "flex-end" }]} />
+          </Animated.View>
         </View>
 
-        <View style={styles.form}>
-          <Text style={styles.label}>Username</Text>
-          <TextInput
-            value={username}
-            onChangeText={setUsername}
-            placeholder="Enter username"
-            placeholderTextColor={colors.textMuted}
-            autoCapitalize="none"
-            autoCorrect={false}
-            style={styles.input}
-          />
+        <Animated.View
+          style={[
+            styles.form,
+            { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+          ]}
+        >
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Username</Text>
+            <TextInput
+              value={username}
+              onChangeText={setUsername}
+              placeholder="Enter credentials..."
+              placeholderTextColor={theme.gray}
+              autoCapitalize="none"
+              style={styles.input}
+            />
+          </View>
 
-          <Text style={[styles.label, styles.labelSpaced]}>Password</Text>
-          <TextInput
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Enter password"
-            placeholderTextColor={colors.textMuted}
-            secureTextEntry
-            style={styles.input}
-          />
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              placeholder="••••••••"
+              placeholderTextColor={theme.gray}
+              secureTextEntry
+              style={styles.input}
+            />
+          </View>
 
           <Pressable
-            style={({ pressed }) => [
-              styles.button,
-              pressed && styles.buttonPressed,
-            ]}
-            onPress={() => onLogin()}
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
+            onPress={onLogin}
           >
-            <Text style={styles.buttonText}>Log in</Text>
+            <Animated.View
+              style={[styles.button, { transform: [{ scale: buttonScale }] }]}
+            >
+              <Text style={styles.buttonText}>LOGIN</Text>
+            </Animated.View>
           </Pressable>
-        </View>
+
+          <Text style={styles.footerNote}>SECURE ENCRYPTED CHANNEL</Text>
+        </Animated.View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -70,88 +226,152 @@ export default function LoginScreen({ onLogin }) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
   },
-  decorStripe: {
+  gridOverlay: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    height: 4,
-    backgroundColor: colors.primary,
+    bottom: 0,
+    opacity: 0.03,
+    backgroundColor: theme.secondary,
   },
   inner: {
     flex: 1,
-    paddingHorizontal: 28,
-    paddingTop: Platform.OS === "ios" ? 56 : 40,
+    paddingHorizontal: 32,
     justifyContent: "center",
   },
-  logoWrap: {
+  header: {
     alignItems: "center",
     marginBottom: 40,
   },
-  logo: {
-    width: 88,
-    height: 88,
-    borderRadius: 20,
-    marginBottom: 16,
+  logoWrapper: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+    height: 120,
+    width: 120,
+  },
+  logoContainer: {
+    width: 90,
+    height: 90,
+    backgroundColor: theme.secondary,
+    borderRadius: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: theme.primary,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 12,
+    zIndex: 2,
+  },
+  logoInner: {
+    width: 45,
+    height: 45,
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.15)",
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  deltaChar: {
+    color: "#FFF",
+    fontSize: 36,
+    fontWeight: "300",
+    marginTop: -4,
+  },
+  radarRing: {
+    position: "absolute",
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    borderWidth: 2,
+    borderColor: theme.primary,
+    zIndex: 1,
   },
   brand: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: colors.text,
-    letterSpacing: 0.5,
+    fontSize: 34,
+    fontWeight: "900",
+    color: theme.secondary,
+    letterSpacing: -1,
+  },
+  mottoContainer: {
+    marginTop: 12,
+    width: "100%",
+    alignItems: "center",
+  },
+  mottoDecor: {
+    width: 40,
+    height: 3,
+    backgroundColor: theme.accent,
+    borderRadius: 2,
+    marginVertical: 8,
   },
   tagline: {
-    marginTop: 8,
-    fontSize: 15,
-    color: colors.accentYellow,
+    fontSize: 13,
+    color: theme.secondary,
+    textAlign: "center",
     fontWeight: "500",
+    lineHeight: 18,
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+  },
+  taglineBold: {
+    color: theme.primary,
+    fontWeight: "800",
   },
   form: {
     width: "100%",
   },
-  label: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: colors.textMuted,
-    textTransform: "uppercase",
-    letterSpacing: 0.6,
+  inputGroup: {
+    marginBottom: 18,
   },
-  labelSpaced: {
-    marginTop: 18,
+  label: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: theme.gray,
+    marginBottom: 8,
+    textTransform: "uppercase",
+    letterSpacing: 1,
   },
   input: {
-    marginTop: 8,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.inputBorder,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: Platform.OS === "ios" ? 14 : 12,
+    backgroundColor: theme.white,
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    paddingVertical: Platform.OS === "ios" ? 16 : 14,
     fontSize: 16,
-    color: colors.text,
+    color: theme.secondary,
+    borderWidth: 1.5,
+    borderColor: "#EDF2F7",
   },
   button: {
-    marginTop: 28,
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    paddingVertical: 16,
+    backgroundColor: theme.primary,
+    borderRadius: 18,
+    height: 64,
+    flexDirection: "row",
     alignItems: "center",
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    elevation: 6,
-  },
-  buttonPressed: {
-    opacity: 0.92,
-    transform: [{ scale: 0.99 }],
+    justifyContent: "center",
+    marginTop: 10,
+    shadowColor: theme.primary,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.4,
+    shadowRadius: 15,
+    elevation: 8,
   },
   buttonText: {
-    color: "#fff",
-    fontSize: 17,
+    color: theme.white,
+    fontSize: 15,
+    fontWeight: "800",
+    letterSpacing: 1,
+  },
+  footerNote: {
+    textAlign: "center",
+    marginTop: 30,
+    fontSize: 10,
     fontWeight: "700",
-    letterSpacing: 0.3,
+    color: theme.gray,
+    letterSpacing: 2,
   },
 });
