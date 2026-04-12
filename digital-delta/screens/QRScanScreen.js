@@ -26,7 +26,6 @@ const theme = {
   inputBg: "#F1F5F9",
 };
 
-<<<<<<< HEAD
 const NODES = [
   { id: "N2", name: "Osmani Airport Node", type: "supply_drop" },
   { id: "N3", name: "Sunamganj Sadar Camp", type: "relief_camp" },
@@ -39,10 +38,6 @@ const NODES = [
   { id: "N12", name: "Chhatak Camp", type: "relief_camp" },
   { id: "N13", name: "Zakiganj Camp", type: "relief_camp" },
 ];
-=======
-// 1. Import centralized nodes from the data folder
-import { NODES } from '../data';
->>>>>>> 337205f45d4223d733143ee52a720aaeb6007bfc
 
 export default function QRScanScreen() {
   const navigation = useNavigation();
@@ -86,7 +81,6 @@ export default function QRScanScreen() {
     }
   };
 
-<<<<<<< HEAD
   if (!permission) return <View style={styles.root} />;
   if (!permission.granted) {
     return (
@@ -100,19 +94,6 @@ export default function QRScanScreen() {
       </View>
     );
   }
-=======
-  // 2. Filter the nodes to only include relief camps and supply drops
-  const filteredNodes = NODES.filter(
-    node => node.type === 'relief_camp' || node.type === 'supply_drop'
-  );
-
-  return (
-    <View style={styles.root}>
-      <StatusBar style="light" />
-      <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
-        <Text style={styles.backText}>← Back to Map</Text>
-      </Pressable>
->>>>>>> 337205f45d4223d733143ee52a720aaeb6007bfc
 
   // Interpolate based on the wrapper height (320px)
   const translateY = scanLineAnim.interpolate({
@@ -181,7 +162,6 @@ export default function QRScanScreen() {
 
         {dropdownOpen && (
           <View style={styles.listContainer}>
-<<<<<<< HEAD
             <ScrollView
               nestedScrollEnabled
               showsVerticalScrollIndicator={false}
@@ -189,13 +169,6 @@ export default function QRScanScreen() {
               {NODES.map((node) => (
                 <Pressable
                   key={node.id}
-=======
-            <ScrollView nestedScrollEnabled>
-              {/* 3. Map over the filtered nodes instead of the hardcoded list */}
-              {filteredNodes.map(node => (
-                <Pressable 
-                  key={node.id} 
->>>>>>> 337205f45d4223d733143ee52a720aaeb6007bfc
                   style={styles.listItem}
                   onPress={() => {
                     setSelectedNode(node);
