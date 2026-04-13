@@ -70,11 +70,9 @@ Move from reactive to proactive logistics by using the **Predictive Logistics En
 
 ---
 
-## 🛸 Fallback Protocols (Advanced)
+## 🛸 Prority Scheduling (Advanced)
 
-In extreme scenarios where surface logistics (roads and water) are completely compromised:
-* If you continue to mark critical paths as flooded until no ground route exists, the system will trigger an **Unreachable State** alert.
-* **Air-Drop Fallback**: If a supply-drop node is within range, the system will automatically escalate the mission to a drone or air-drop sequence to bypass ground obstacles entirely.
+Request for relief from relief shelter to supply manager are processed via Earliest Deadline First priority scheduling. Here dijkstra algorithm calculate route and time taken, and based on priority and SLA requests are processed.
 
 ---
 
