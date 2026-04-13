@@ -134,8 +134,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
                     // Nav Items
                     _buildSidebarItem(Icons.inventory_2_outlined, 'Inventory Management', () { _toggleSidebar(); Navigator.pushNamed(context, '/inventory'); }),
-                    _buildSidebarItem(Icons.assignment_outlined, 'Duty Management', () {}),
-                    _buildSidebarItem(Icons.hub_outlined, 'Network Mesh', () {}),
+                    _buildSidebarItem(Icons.schedule_send, 'Priority Scheduling', () { _toggleSidebar(); Navigator.pushNamed(context, '/scheduling'); }),
                     _buildSidebarItem(Icons.settings_outlined, 'System Settings', () {}),
 
                     const Spacer(),
