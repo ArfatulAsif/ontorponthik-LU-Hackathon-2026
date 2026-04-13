@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Added for local storage
 import '../core/theme.dart';
-import 'dashboard_screen.dart'; // We embed the map here just like RN
+import 'dashboard_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,11 +12,36 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   bool _isSidebarOpen = false;
+  String _userType = ''; // Holds the current user's role
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserRole();
+  }
+
+  // Load the user role from Local Storage
+  Future<void> _loadUserRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _userType = prefs.getString('user_type') ?? 'Supply Manager';
+    });
+  }
 
   void _toggleSidebar() {
     setState(() {
       _isSidebarOpen = !_isSidebarOpen;
     });
+  }
+
+  // Handle Logout: Clear storage and go to login page
+  Future<void> _handleLogout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('user_type'); // Reset the user type
+    
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
   }
 
   @override
@@ -43,7 +69,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // FIX: Moved color and borderRadius inside BoxDecoration
                     Container(width: 20, height: 2.5, margin: const EdgeInsets.symmetric(vertical: 2), decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(5))),
                     Container(width: 14, height: 2.5, margin: const EdgeInsets.symmetric(vertical: 2), decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(5))),
                     Container(width: 20, height: 2.5, margin: const EdgeInsets.symmetric(vertical: 2), decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(5))),
@@ -103,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 if (details.primaryVelocity! < 0) _toggleSidebar(); // Swipe left to close
               },
               child: Container(
-                color: Colors.white.withOpacity(0.92), // Glass effect translation
+                color: Colors.white.withOpacity(0.92), 
                 padding: const EdgeInsets.only(top: 60, left: 30, right: 30),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -127,20 +152,33 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     Row(
                       children: [
                         Container(width: 8, height: 8, decoration: const BoxDecoration(color: AppColors.accentGreen, shape: BoxShape.circle), margin: const EdgeInsets.symmetric(horizontal: 8)),
-                        const Text('LOGISTICS NODE ACTIVE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.textMuted, letterSpacing: 1.5)),
+                        // Show the dynamic user type here
+                        Text('$_userType ACTIVE'.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.textMuted, letterSpacing: 1.5)),
                       ],
                     ),
                     const SizedBox(height: 40),
 
-                    // Nav Items
-                    _buildSidebarItem(Icons.inventory_2_outlined, 'Inventory Management', () { _toggleSidebar(); Navigator.pushNamed(context, '/inventory'); }),
-                    _buildSidebarItem(Icons.assignment_outlined, 'Duty Management', () {}),
-                    _buildSidebarItem(Icons.hub_outlined, 'Network Mesh', () {}),
-                    _buildSidebarItem(Icons.settings_outlined, 'System Settings', () {}),
+                    // --- DYNAMIC ROLE-BASED NAVIGATION ITEMS ---
+                    
+                    if (_userType == 'Supply Manager') ...[
+                      _buildSidebarItem(Icons.inventory_2_outlined, 'Inventory Management', () { _toggleSidebar(); Navigator.pushNamed(context, '/inventory'); }),
+                      _buildSidebarItem(Icons.schedule_send, 'Priority Scheduling', () { _toggleSidebar(); Navigator.pushNamed(context, '/scheduling'); }),
+                      _buildSidebarItem(Icons.settings_outlined, 'System Settings', () {}),
+                    ] 
+                    else if (_userType == 'Camp Commander') ...[
+                      _buildSidebarItem(Icons.send_outlined, 'Send Relief Request', () { _toggleSidebar(); /* Add Navigation to request screen later */ }),
+                    ]
+                    else if (_userType == 'Field Volunteer') ...[
+                      // Intentionally left blank as requested
+                    ],
 
                     const Spacer(),
+
+                    // --- LOGOUT BUTTON ---
+                    _buildSidebarItem(Icons.logout, 'Logout', _handleLogout),
+                    const SizedBox(height: 10),
+
                     const Center(child: Text('SECURE ENCRYPTED CHANNEL', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textMuted, letterSpacing: 2))),
-                    // FIX: Moved color and borderRadius inside BoxDecoration
                     Center(child: Container(width: 30, height: 2, margin: const EdgeInsets.only(top: 12, bottom: 40), decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(1)))),
                   ],
                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Added for local storage
 import '../core/theme.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -8,7 +9,6 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-// TickerProviderStateMixin allows multiple animation controllers
 class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin {
   late AnimationController _entryController;
   late AnimationController _pulseController;
@@ -21,11 +21,15 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   late Animation<double> _radarOpacity;
   late Animation<Offset> _logoFloat;
 
+  // Added Role Selection variables
+  final List<String> _userTypes = ['Supply Manager', 'Field Volunteer', 'Camp Commander'];
+  String _selectedUserType = 'Supply Manager'; // Default selection
+
   @override
   void initState() {
     super.initState();
 
-    // 1. Entry Animations (Staggered fade/slide)
+    // 1. Entry Animations
     _entryController = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
     _logoPop = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(parent: _entryController, curve: Curves.elasticOut));
     _fadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(parent: _entryController, curve: const Interval(0.2, 1.0, curve: Curves.easeOut)));
@@ -54,6 +58,16 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     super.dispose();
   }
 
+  // Handle saving to local storage and navigating
+  Future<void> _handleLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_type', _selectedUserType);
+    
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/home');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,7 +91,6 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          // Radar Ring
                           AnimatedBuilder(
                             animation: _pulseController,
                             builder: (context, child) => Transform.scale(
@@ -91,7 +104,6 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                               ),
                             ),
                           ),
-                          // Floating Logo
                           SlideTransition(
                             position: _logoFloat,
                             child: ScaleTransition(
@@ -134,10 +146,41 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                             Container(width: 40, height: 3, color: AppColors.accentYellow, margin: const EdgeInsets.symmetric(vertical: 8)),
                             const SizedBox(height: 40),
 
-                            _buildInputGroup('USERNAME', 'Enter credentials...', false),
-                            const SizedBox(height: 18),
-                            _buildInputGroup('PASSWORD', '••••••••', true),
-                            const SizedBox(height: 10),
+                            // Role Selection Dropdown
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('SELECT AUTHORIZED ROLE', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textMuted, letterSpacing: 1)),
+                                const SizedBox(height: 8),
+                                DropdownButtonFormField<String>(
+                                  value: _selectedUserType,
+                                  icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.surface),
+                                  decoration: InputDecoration(
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFFEDF2F7), width: 1.5)),
+                                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
+                                  ),
+                                  dropdownColor: Colors.white,
+                                  items: _userTypes.map((String type) {
+                                    return DropdownMenuItem<String>(
+                                      value: type,
+                                      child: Text(type, style: const TextStyle(color: AppColors.surface, fontSize: 16, fontWeight: FontWeight.w600)),
+                                    );
+                                  }).toList(),
+                                  onChanged: (String? newValue) {
+                                    if (newValue != null) {
+                                      setState(() {
+                                        _selectedUserType = newValue;
+                                      });
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                            
+                            const SizedBox(height: 28),
 
                             // Login Button
                             ElevatedButton(
@@ -148,8 +191,8 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                 elevation: 8,
                                 shadowColor: AppColors.primary.withOpacity(0.4),
                               ),
-                              onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
-                              child: const Text('LOGIN', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                              onPressed: _handleLogin, // Calls our async function to save role
+                              child: const Text('AUTHENTICATE', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w900, letterSpacing: 1)),
                             ),
                             const SizedBox(height: 30),
                             const Text('SECURE ENCRYPTED CHANNEL', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textMuted, letterSpacing: 2)),
@@ -164,29 +207,6 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildInputGroup(String label, String hint, bool isPassword) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textMuted, letterSpacing: 1)),
-        const SizedBox(height: 8),
-        TextField(
-          obscureText: isPassword,
-          style: const TextStyle(color: AppColors.surface, fontSize: 16),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: const TextStyle(color: AppColors.textMuted),
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFFEDF2F7), width: 1.5)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
-          ),
-        ),
-      ],
     );
   }
 }

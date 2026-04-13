@@ -6,6 +6,9 @@ import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/qr_scan_screen.dart';
 import 'screens/inventory_screen.dart';  // Added Inventory route
+import 'screens/priority_scheduling_screen.dart';
+import 'screens/scheduling_simulation_screen.dart';
+import 'screens/scheduling_report_screen.dart';
 
 void main() {
   runApp(
@@ -39,6 +42,7 @@ class DigitalDeltaApp extends StatelessWidget {
         '/home': (context) => const HomeScreen(),
         '/qr_scan': (context) => const QRScanScreen(),
         '/inventory': (context) => const InventoryScreen(), // Added
+        '/scheduling': (context) => const PrioritySchedulingScreen(),
         // Note: RouteOptimizationScreen takes arguments, so we navigate to it dynamically, not here.
       },
     );
