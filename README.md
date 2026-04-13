@@ -130,8 +130,14 @@ This repository currently contains:
       <img src="images/Priority%20Scheduling%20report.jpeg" width="250"/><br>
       <b>10. SLA Execution Report</b>
     </td>
-    <td></td>
-    <td></td>
+    <td align="center">
+      <img src="images/profile1.jpeg" width="250"/><br>
+      <b>11. Profile (Part 1)</b>
+    </td>
+    <td align="center">
+      <img src="images/profile2.jpeg" width="250"/><br>
+      <b>12. Profile (Part 2)</b>
+    </td>
   </tr>
 </table>
 
