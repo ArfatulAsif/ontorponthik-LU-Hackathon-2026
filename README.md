@@ -30,46 +30,110 @@ This repository currently contains:
 
 ## Core Features
 
-### 1. Operations Login
+**1. Operations Login**
 
-- Login screen
-- Entering username and password proceeds to the main system
+- Login screen with Role-Based Access Control (RBAC).
+- Entering credentials proceeds to the main system with role-specific sidebar layouts (Supply Manager, Camp Commander, Field Volunteer).
 
-### 2. Live Logistics Network Map
+**2. Live Logistics Network Map**
 
-- Interactive operational map powered by Leaflet inside Flutter WebView
-- Relief camps, command center, hospital, supply-drop node, and volunteers shown on the network
-- Road and waterway links are visually differentiated
+- Interactive operational map powered by Leaflet inside a Flutter WebView.
+- Relief camps, command centers, hospitals, supply-drop nodes, and volunteers shown on the network.
+- Road and waterway links are visually differentiated.
 
-### 3. Manual Flood Reporting
+**3. Manual Flood Reporting**
 
-- Tap a route segment to mark or clear flood disruption
-- Flooded edges instantly update the shared app state
-- Route availability changes propagate across the workflow
+- Tap a route segment to mark or clear flood disruptions.
+- Flooded edges instantly update the globally shared app state.
+- Route availability changes propagate instantly across all routing workflows.
 
-### 4. Destination Selection and Route Planning
+**4. Destination Selection and Route Planning**
 
-- Simulated QR flow for selecting a destination node
-- Shortest path calculation from the central hub to the selected destination
-- ETA display for the active delivery route
+- Simulated QR flow for selecting a destination node.
+- Shortest path calculation from the central hub to the selected destination.
+- ETA display for the active delivery route with vehicle-specific animations.
 
-### 5. Predictive Logistics Engine
+**5. Predictive Logistics Engine**
 
-- On-device demo of a custom logistic regression pipeline
-- Simulates rainfall, rate-of-change, and elevation signals
-- Flags high-risk edges and displays model metrics such as accuracy, precision, recall, and F1 score
+- On-device execution of a custom Logistic Regression pipeline from scratch.
+- Simulates rainfall, rate-of-change, and elevation signals to forecast disasters.
+- Flags high-risk edges and displays real-time model metrics such as Accuracy, Precision, Recall, and F1 Score.
 
-### 6. Resilient Re-Routing
+**6. Resilient Re-Routing**
 
-- Recalculates routes after manual or predicted flood events
-- Automatically avoids flooded edges
-- Falls back to drone/air-drop delivery when no ground or water route is available
+- Recalculates routes automatically after manual or AI-predicted flood events.
+- Dynamically avoids flooded edges using network graph traversal.
+- Falls back to autonomous Drone/Air-Drop delivery simulations when no ground or water route is accessible.
 
-### 7. Inventory Registry
+**7. Inventory Registry**
 
-- Add, view, edit, and delete supply items
-- Tracks SKU, quantity, and category
-- Useful for simulating hub-side logistics operations
+- Add, view, edit, and delete critical supply items.
+- Tracks SKU, unit quantities, and categories.
+- Essential for simulating hub-side logistics and dispatch operations.
+
+**8. Intelligent Priority Scheduling & SLA Tracking**
+
+- Dynamic queue of relief requests categorized by priority (P0 to P3) and SLA deadlines.
+- Advanced sorting algorithm factoring in both Dijkstra travel time and SLA slack time to mathematically minimize SLA breaches.
+- Automated fleet simulation dispatching cars, boats, and drones sequentially.
+- Comprehensive post-simulation report detailing delivery ETAs, success rates, and SLA breach logs.
+
+---
+
+## Application Gallery
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="images/login%20page.jpeg" width="250"/><br>
+      <b>1. RBAC</b>
+    </td>
+    <td align="center">
+      <img src="images/dashboard.jpeg" width="250"/><br>
+      <b>2. Live Operations Dashboard</b>
+    </td>
+    <td align="center">
+      <img src="images/side%20bar.jpeg" width="250"/><br>
+      <b>3. Role-Based Sidebar</b>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="images/scan%20delivery.jpeg" width="250"/><br>
+      <b>4. Destination Targeting</b>
+    </td>
+    <td align="center">
+      <img src="images/routing.jpeg" width="250"/><br>
+      <b>5. Base Route Optimization</b>
+    </td>
+    <td align="center">
+      <img src="images/ML%20model%20report.jpeg" width="250"/><br>
+      <b>6. Predictive ML Engine</b>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="images/re%20routing.jpeg" width="250"/><br>
+      <b>7. Air-Drop & Re-Routing</b>
+    </td>
+    <td align="center">
+      <img src="images/relief%20request%20and%20priorities.jpeg" width="250"/><br>
+      <b>8. SLA Priority Queue</b>
+    </td>
+    <td align="center">
+      <img src="images/Priority%20scheduling%20in%20process.jpeg" width="250"/><br>
+      <b>9. Live Fleet Simulation</b>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="images/Priority%20Scheduling%20report.jpeg" width="250"/><br>
+      <b>10. SLA Execution Report</b>
+    </td>
+    <td></td>
+    <td></td>
+  </tr>
+</table>
 
 ## Technology Stack
 
@@ -95,7 +159,6 @@ This repository currently contains:
 ### Protocol Definition
 
 - Protocol Buffers (`proto3`)
-
 
 ### Important Files
 
@@ -147,10 +210,3 @@ The repository includes a protobuf schema at [`delta/proto/digitaldelta.proto`](
 - Delivery tasks and chain-of-custody data
 - Chat messaging
 - Sync envelopes and node identity
-
-## Future Scope
-
-- Replace mock graph data with live backend synchronization
-- Connect the mobile UI directly to protobuf-backed peer sync flows
-- Add real QR scanning, offline persistence, and field authentication
-- Expand prediction with live weather, telemetry, and historical flood data
