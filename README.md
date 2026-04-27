@@ -216,3 +216,15 @@ The repository includes a protobuf schema at [`delta/proto/digitaldelta.proto`](
 - Delivery tasks and chain-of-custody data
 - Chat messaging
 - Sync envelopes and node identity
+
+
+
+<br>
+
+
+<br>
+
+
+## We secured 𝐑𝐮𝐧𝐧𝐞𝐫-𝐮𝐩 position 𝐚𝐭 𝐭𝐡𝐞 𝐇𝐚𝐜𝐤𝐟𝐮𝐬𝐢𝐨𝐧 𝟐𝟎𝟐𝟔 𝐍𝐚𝐭𝐢𝐨𝐧𝐚𝐥 𝐈𝐧𝐭𝐞𝐫-𝐔𝐧𝐢𝐯𝐞𝐫𝐬𝐢𝐭𝐲 𝐇𝐚𝐜𝐤𝐚𝐭𝐡𝐨𝐧
+
+<img src="images/image.jpeg">
